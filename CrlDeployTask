@@ -1,0 +1,42 @@
+package com.sheca.brutus.task;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.SchedulingConfigurer;
+import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+/**
+ * 发布定时任务
+ */
+@Slf4j
+@Component
+public class CrlDeployTask implements SchedulingConfigurer {
+
+
+    @Override
+    public void configureTasks(@Autowired ScheduledTaskRegistrar taskRegistrar) {
+        //从配置文件中读取定时任务发布的间隔
+        Integer crlTimeDiff = configProperties.getCrlTimeDiff();
+        if (crlTimeDiff == null || crlTimeDiff <= 0) {
+            log.info("定时器的时间间隔未配置或配置有误：" + crlTimeDiff);
+            return;
+        }
+        // 动态拼接cron表达式
+        String cron = "0 0/" + crlTimeDiff + " * * * ?";
+        taskRegistrar.addCronTask(() -> {
+            LocalDateTime beginTime = LocalDateTime.now();
+            log.info("CRL发布定时任务执行时间: " + DateUtil.formatDate(beginTime, DateUtil.DEFAULT_FORMAT));
+            try {
+                //todo
+            } catch (Exception ex) {
+                log.info("CRL发布定时任务异常：", ex);
+            }
+            log.info("CRL发布定时任务执行完毕");
+        }, cron);
+    }
+
+}
